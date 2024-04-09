@@ -821,6 +821,24 @@ class Button {
     }
 }
 
+class DisplayButton extends Button {
+    constructor(x, y, width, height, text, rgb, ID) {
+        super(x, y, width, height, text, rgb, ID);
+
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillStyle = this.rgb;
+        ctx.fillRect(this.x+3, this.y+3, this.width-6, this.height-6);
+        ctx.fillStyle = 'black';
+        ctx.font = 'bold 40px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, this.x + this.width/2, this.y + this.height/2 + 14);
+    }
+}
+
 class Tile {
     constructor(x, y, width, height, value, valid, clicked, original) {
         this.x = x;
@@ -912,24 +930,21 @@ window.addEventListener('resize', () => {
 
 
 function isValidMove(grid, k, num) {
-    // grid is one array containing all the tiles with a length of 81 (9x9 grid)
     let row = Math.floor(k / 9);
     let col = k % 9;
-    // Check if the number already exists in the same row
+
     for (let i = 0; i < 9; i++) {
         if (grid[row * 9 + i].value === num && i !== col) {
             return false;
         }
     }
 
-    // Check if the number already exists in the same column
     for (let i = 0; i < 9; i++) {
         if (grid[i * 9 + col].value === num && i !== row) {
             return false;
         }
     }
 
-    // Check if the number already exists in the same 3x3 box
     const boxStartRow = Math.floor(row / 3) * 3;
     const boxStartCol = Math.floor(col / 3) * 3;
     for (let i = boxStartRow; i < boxStartRow + 3; i++) {
@@ -940,7 +955,7 @@ function isValidMove(grid, k, num) {
         }
     }
 
-    return true; // Valid move
+    return true;
 }
 
 function convertSudoku(string) {
@@ -1110,30 +1125,69 @@ function checkIfWon(tileArray) {
     return true;
 }
 
-function drawNumbersLeft(tileArray) {
+function updatedNumbersLeft(tileArray, buttonList) {
     let numbersLeft = [0, 0, 0, 0, 0, 0, 0, 0, 0];
     for (let i = 0; i < tileArray.length; i++) {
-        if (tileArray[i].value != 0) {
+        if (tileArray[i].value != 0 && tileArray[i].valid) {
             numbersLeft[tileArray[i].value - 1] += 1;
         }
     }
+    
     for (let i = 0; i < 9; i++) {
-        const maxWidth = 50
-        const maxHeight = 50
-        const x = 300;
-        const y = 40;
-        ctx.fillStyle = 'black';
-        ctx.fillRect(window.innerWidth / 2 + x - 30, y + 60 * i, maxWidth, maxHeight);
-        ctx.fillStyle = 'white';
-        ctx.fillRect(window.innerWidth / 2 + x - 30 + 5, y + 60 * i + 5, maxWidth-10, maxHeight-10);
-        if (numbersLeft[i] < 9) {
-            ctx.font = '40px Arial';
-            ctx.fillStyle = 'black';
-            ctx.fillText(i + 1, window.innerWidth / 2 + x - 30 + maxWidth/2, y + 60 * i + 15 + maxHeight/2);
+        switch (numbersLeft[i]) {
+            case 0:
+                buttonList[i].text = i + 1;
+                buttonList[i].rgb = 'rgb(50, 50, 50)';
+                break;
+            case 1:
+                buttonList[i].text = i + 1;
+                buttonList[i].rgb = 'rgb(70, 70, 70)';
+                break;
+            case 2:
+                buttonList[i].text = i + 1;
+                buttonList[i].rgb = 'rgb(90, 90, 90)';
+                break;
+            case 3:
+                buttonList[i].text = i + 1;
+                buttonList[i].rgb = 'rgb(110, 110, 110)';
+                break;
+            case 4:
+                buttonList[i].text = i + 1;
+                buttonList[i].rgb = 'rgb(130, 130, 130)';
+                break;
+            case 5:
+                buttonList[i].text = i + 1;
+                buttonList[i].rgb = 'rgb(150, 150, 150)';
+                break;
+            case 6:
+                buttonList[i].text = i + 1;
+                buttonList[i].rgb = 'rgb(170, 170, 170)';
+                break;
+            case 7:
+                buttonList[i].text = i + 1;
+                buttonList[i].rgb = 'rgb(190, 190, 190)';
+                break;
+            case 8:
+                buttonList[i].text = i + 1;
+                buttonList[i].rgb = 'rgb(210, 210, 210)';
+                break;
+            case 9:
+                buttonList[i].text = '';
+                buttonList[i].rgb = 'rgb(255, 255, 255)';
+                break;
+
         }
+        
     }
 
 }
+
+function drawNumbersLeft(ctx, buttonList) {
+    for (let i = 0; i < buttonList.length; i++) {
+        buttonList[i].draw(ctx);
+    }
+}
+
 
 function deleteNotes(tileArray, clicked) {
     for (let i = 0; i < tileArray.length; i++) {
@@ -1163,64 +1217,108 @@ function deleteNotes(tileArray, clicked) {
     }
 }
 
+function createDisplayButtons() {
+    const maxWidth = 50
+    const maxHeight = 50
+    const x = 300;
+    const y = 40;
+    let buttonList = [];
+    for (let i = 0; i < 9; i++) {
+        newButton = new DisplayButton(window.innerWidth / 2 + x - 30, y + 60 * i, maxWidth, maxHeight, i + 1, [200,200,200], i + 1);
+        buttonList.push(newButton);
+    }
+    return buttonList;
+}
+
 
 canvas.addEventListener('click', (e) => {
     let x = e.clientX;
     let y = e.clientY;
 
-    // check if the click is inside the sudoku grid
-    let foundClickInSudoku = false;
-    for (let i = 0; i < tileArray.length; i++) {
-        if (x > tileArray[i].x && x < tileArray[i].x + tileArray[i].width && y > tileArray[i].y && y < tileArray[i].y + tileArray[i].height) {
-            for (let j = 0; j < tileArray.length; j++) {
-                tileArray[j].clicked = false;
-            }
-            tileArray[i].clicked = true;
-            foundClickInSudoku = true;
-        }
-    }
-    if (!foundClickInSudoku) {
-        for (let i = 0; i < tileArray.length; i++) {
-            tileArray[i].clicked = false;
-        }
-        for (let i = 0; i < buttonList.length; i++) {
-            if (x > buttonList[i].x && x < buttonList[i].x + buttonList[i].width && y > buttonList[i].y && y < buttonList[i].y + buttonList[i].height) {
-                if (buttonList[i].id == 'newGame') {
-                    tileArray = convertSudoku(sudoku.generate(newDifficulty));
-                    startTime = Date.now();
-                }
-                else if (buttonList[i].id == 'easy') {
-                    newDifficulty = 'easy';
-                    buttonList[0].text = 'New Game: [EASY]';
-                }
-                else if (buttonList[i].id == 'medium') {
-                    newDifficulty = 'medium';
-                    buttonList[0].text = 'New Game: [MEDIUM]';
-                }
-                else if (buttonList[i].id == 'hard') {
-                    newDifficulty = 'hard';
-                    buttonList[0].text = 'New Game: [HARD]';
-                }
-                else if (buttonList[i].id == 'veryHard') {
-                    newDifficulty = 'very-hard';
-                    buttonList[0].text = 'New Game: [VERY HARD]';
-                }
-                else if (buttonList[i].id == 'insane') {
-                    newDifficulty = 'insane';
-                    buttonList[0].text = 'New Game: [INSANE]';
-                }
-                else if (buttonList[i].id == 'inhuman') {
-                    newDifficulty = 'inhuman';
-                    buttonList[0].text = 'New Game: [INHUMAN]';
-                }
-                else if (buttonList[i].id == 'note') {
-                    if (buttonList[i].text == 'Notes: [Off]') {
-                        buttonList[i].text = 'Notes: [On]';
-                        buttonList[i].rgb = 'rgb(56, 255, 96)';
+    let foundButtonPress = false;
+    for (let i = 0; i < displayButtons.length; i++) {
+        if (x > displayButtons[i].x && x < displayButtons[i].x + displayButtons[i].width && y > displayButtons[i].y && y < displayButtons[i].y + displayButtons[i].height) {
+            foundButtonPress = true;
+            clicked = getClicked(tileArray);
+            if (clicked[0] > -1 && clicked[1] > -1) {
+                if (buttonList[7].text == 'Notes: [On]') {
+                    clicked = getClicked(tileArray);
+                    if (tileArray[clicked[0] + clicked[1] * 9].notes[i] == true) {
+                        tileArray[clicked[0] + clicked[1] * 9].notes[i] = false;
                     }
                     else {
-                        buttonList[i].text = 'Notes: [Off]';
-                        buttonList[i].rgb = 'rgb(200,200,200)';
+                        tileArray[clicked[0] + clicked[1] * 9].notes[i] = true;
+                    }
+                }
+                else {
+                    if (tileArray[clicked[1] * 9 + clicked[0]].value == 0) {
+                        tileArray[clicked[1] * 9 + clicked[0]].value = i + 1;
+                        tileArray[clicked[1] * 9 + clicked[0]].valid = isValidMove(tileArray, clicked[1] * 9 + clicked[0], i + 1);
+                        deleteNotes(tileArray, clicked);
+                    }
+                    else {
+                        tileArray[clicked[1] * 9 + clicked[0]].notes[i] = !tileArray[clicked[1] * 9 + clicked[0]].notes[i];
+                    }
+                }
+            }
+            
+        }
+    }
+    // check if the click is inside the sudoku grid
+    if (!foundButtonPress) {
+        let foundClickInSudoku = false;
+        for (let i = 0; i < tileArray.length; i++) {
+            if (x > tileArray[i].x && x < tileArray[i].x + tileArray[i].width && y > tileArray[i].y && y < tileArray[i].y + tileArray[i].height) {
+                for (let j = 0; j < tileArray.length; j++) {
+                    tileArray[j].clicked = false;
+                }
+                tileArray[i].clicked = true;
+                foundClickInSudoku = true;
+            }
+        }
+        if (!foundClickInSudoku) {
+            for (let i = 0; i < tileArray.length; i++) {
+                tileArray[i].clicked = false;
+            }
+            for (let i = 0; i < buttonList.length; i++) {
+                if (x > buttonList[i].x && x < buttonList[i].x + buttonList[i].width && y > buttonList[i].y && y < buttonList[i].y + buttonList[i].height) {
+                    if (buttonList[i].id == 'newGame') {
+                        tileArray = convertSudoku(sudoku.generate(newDifficulty));
+                        startTime = Date.now();
+                    }
+                    else if (buttonList[i].id == 'easy') {
+                        newDifficulty = 'easy';
+                        buttonList[0].text = 'New Game: [EASY]';
+                    }
+                    else if (buttonList[i].id == 'medium') {
+                        newDifficulty = 'medium';
+                        buttonList[0].text = 'New Game: [MEDIUM]';
+                    }
+                    else if (buttonList[i].id == 'hard') {
+                        newDifficulty = 'hard';
+                        buttonList[0].text = 'New Game: [HARD]';
+                    }
+                    else if (buttonList[i].id == 'veryHard') {
+                        newDifficulty = 'very-hard';
+                        buttonList[0].text = 'New Game: [VERY HARD]';
+                    }
+                    else if (buttonList[i].id == 'insane') {
+                        newDifficulty = 'insane';
+                        buttonList[0].text = 'New Game: [INSANE]';
+                    }
+                    else if (buttonList[i].id == 'inhuman') {
+                        newDifficulty = 'inhuman';
+                        buttonList[0].text = 'New Game: [INHUMAN]';
+                    }
+                    else if (buttonList[i].id == 'note') {
+                        if (buttonList[i].text == 'Notes: [Off]') {
+                            buttonList[i].text = 'Notes: [On]';
+                            buttonList[i].rgb = 'rgb(56, 255, 96)';
+                        }
+                        else {
+                            buttonList[i].text = 'Notes: [Off]';
+                            buttonList[i].rgb = 'rgb(200,200,200)';
+                        }
                     }
                 }
             }
@@ -1338,8 +1436,10 @@ insaneButton = new Button(window.innerWidth / 2 - 300 + 125, 745, 120, 50, 'Insa
 inhumanButton = new Button(window.innerWidth / 2 - 300 + 125, 800, 120, 50, 'INHUMAN', [30, 30, 30], 'inhuman');
 
 noteButton = new Button(window.innerWidth / 2  - 15, 775, 150, 75, 'Notes: [Off]', [200,200,200], 'note');
-
 buttonList = [newGameButton, easyButton, mediumButton, hardButton, veryHardButton, insaneButton, inhumanButton, noteButton];
+
+let displayButtons = createDisplayButtons();
+
 
 let newDifficulty = "easy";
 let startTime = Date.now();
@@ -1365,7 +1465,8 @@ function render() {
     drawBackground(tileArray);
     drawButtons(ctx, buttonList);
     drawTimer(timer);
-    drawNumbersLeft(tileArray);
+    updatedNumbersLeft(tileArray, displayButtons);
+    drawNumbersLeft(ctx, displayButtons);
 
     if (checkIfWon(tileArray)) {
         ctx.font = '30px Arial';
