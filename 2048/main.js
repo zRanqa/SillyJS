@@ -9,6 +9,7 @@ function init() {
         squares.push(square);
     }
     addNumber();
+    addNumber();
     updateStyles();
 }
 init()
@@ -60,6 +61,70 @@ function updateStyles() {
                 squares[i].style.backgroundColor = '#edc22e';
                 squares[i].style.color = '#f9f6f2';
                 break;
+            case '4096':
+                squares[i].style.backgroundColor = '#0000ff';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '8192':
+                squares[i].style.backgroundColor = '#0000ee';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '16384':
+                squares[i].style.backgroundColor = '#0000dd';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '32768':
+                squares[i].style.backgroundColor = '#0000cc';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '65536':
+                squares[i].style.backgroundColor = '#0000bb';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '131072':
+                squares[i].style.backgroundColor = '#0000aa';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '262144':
+                squares[i].style.backgroundColor = '#000099';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '524288':
+                squares[i].style.backgroundColor = '#000088';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '1048576':
+                squares[i].style.backgroundColor = '#000077';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '2097152':
+                squares[i].style.backgroundColor = '#000066';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '4194304':
+                squares[i].style.backgroundColor = '#000055';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '8388608':
+                squares[i].style.backgroundColor = '#000044';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '16777216':
+                squares[i].style.backgroundColor = '#000033';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '33554432':
+                squares[i].style.backgroundColor = '#000022';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '67108864':
+                squares[i].style.backgroundColor = '#000011';
+                squares[i].style.color = '#f9f6f2';
+                break;
+            case '134217728':
+                squares[i].style.backgroundColor = '#000000';
+                squares[i].style.color = '#f9f6f2';
+                break;
             default:
                 squares[i].style.backgroundColor = '#cdc1b4';
                 squares[i].style.color = '#776e65';
@@ -70,16 +135,16 @@ function updateStyles() {
     }
 }
 
+function clearBoard() {
+    for (let i = 0; i < 16; ++i) {
+        squares[i].innerText = '';
+    }
+}
+
 function checkState() {
     let lost = true;
     for (let i = 0; i < 16; ++i) {
-        if (squares[i].innerText === '2048') {
-            alert('You win!');
-            for (let i = 0; i < 16; ++i) {
-                squares[i].innerText = '';
-            }
-        }
-        if (!squares[i].innerText) {
+        if (!squares[i].innerText || i % 4 !== 3 && squares[i].innerText === squares[i + 1].innerText || i < 12 && squares[i].innerText === squares[i + 4].innerText) {
             lost = false;
         }
     }
@@ -89,6 +154,13 @@ function checkState() {
             squares[i].innerText = '';
         }
     }
+}
+
+function add2048() {
+    const emptySquares = squares.filter(square => !square.innerText);
+    const index = Math.floor(Math.random() * emptySquares.length);
+    emptySquares[index].innerText = 2048;
+
 }
 
 function addNumber() {
@@ -203,6 +275,8 @@ function moveRight() {
 
 }
 
+let toggle2048Mode = false;
+
 document.addEventListener('keydown', (e) => {
     currentState = squares.map(square => ":"+square.innerText+":").toString();
     let moved = false;
@@ -223,12 +297,47 @@ document.addEventListener('keydown', (e) => {
             moveRight();
             moved = true;
             break;
+        case ' ':
+            if (toggle2048Mode) {
+                toggle2048Mode = false;
+                clearBoard();
+                addNumber();
+                addNumber();
+                updateStyles();
+                break;
+            }
+            else {
+                toggle2048Mode = true;
+                clearBoard();
+                add2048();
+                add2048();
+                updateStyles();
+                break;
+            }
+        case 'r':
+            // spawn every number from 2048 to 2^26
+            clearBoard();
+            let count = 0;
+            for (let i = 2048; i < 33554432; i *= 2) {
+                squares[count].innerText = i;
+                checkState();
+                count++;
+            }
+            updateStyles();
+
+
     }
     if (moved) {
         checkState();
         if (currentState !== squares.map(square => ":"+square.innerText+":").toString()) {
-            addNumber();
-            updateStyles();
+            if (toggle2048Mode) {
+                add2048();
+                updateStyles();
+            }
+            else {
+                addNumber();
+                updateStyles();
+            }
         }
     }
 });
